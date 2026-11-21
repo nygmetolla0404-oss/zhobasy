@@ -21,7 +21,7 @@ window.DATA = {
     { id: 'rafting', icon: '🛶', title: 'Рафтинг · су туризмі', seasons: ['summer'], stats: ['Қора өзені', 'Нұсқаушымен'] },
     { id: 'buddha', icon: '🪨', title: 'Будда тасы · 1-лагерь', seasons: 'all', stats: ['Текеліден 15 км', 'Эко-лагерь'] },
     { id: 'forest', icon: '🌲', title: 'Шыршалы орман · 2-лагерь', seasons: 'all', stats: ['1000+ га', '2200 м', 'Фито-бар'] },
-    { id: 'aktas', icon: '🧗', title: 'Ақтас жартасы', seasons: ['spring', 'summer', 'autumn'], stats: ['500–600 м', 'Альпинизм'] },
+    { id: 'aktas', icon: '🧗', title: 'Ақтас жартасы', seasons: 'all', stats: ['500–600 м', 'Альпинизм', 'Қысқы альпинизм'] },
     { id: 'village', icon: '🛖', title: '«Nomad Village» этно-ауылы', seasons: 'all', stats: ['Қымыз', 'Шұбат', 'Саумал', 'Құрт', 'Ірімшік'] },
     { id: 'waterfall', icon: '💧', title: 'Бұрқан-бұлақ сарқырамасы', seasons: 'all', stats: ['168 м', '3 каскад 114 м', '2000 м биіктік'] }
   ],
@@ -83,7 +83,7 @@ window.INFO = {
   hotel: { t: 'Қонақүй', i: '🏨', p: 'hotel_in', enter: 'hotel' }, info: { t: 'Ақпарат орталығы', i: 'ℹ️', p: '@concept', enter: 'info' },
   rental: { t: 'Прокат орталығы', i: '🎿', p: 'rental_in', enter: 'rental' }, health: { t: 'Сауықтыру орталығы', i: '🌿', p: 'phyto', enter: 'health' },
   stable: { t: 'Атшабар қорасы', i: '🐴', p: 'stable_in', enter: 'stable' },
-  gondola: { t: 'Гондола кабинасы', i: '🚡', p: 'gondola' }, snow_cannon: { t: 'Қар зеңбірегі', i: '❄️', p: 'snow_cannon' }, skiers: { t: 'Шаңғышылар', i: '⛷️', p: 'skiers' },
+  gondola: { t: 'Гондола кабинасы', i: '🚡', p: 'gondola', enter: 'cable' }, station: { t: 'Гондола бекеті', i: '🚡', p: 'station', enter: 'cable' }, alpine: { t: 'Қысқы альпинизм', i: '🏔️', p: 'ice' }, ice: { t: 'Мұзға өрмелеу', i: '🧊', p: 'ice' }, snow_cannon: { t: 'Қар зеңбірегі', i: '❄️', p: 'snow_cannon' }, skiers: { t: 'Шаңғышылар', i: '⛷️', p: 'skiers' },
   snowpark: { t: 'Сноубордшылар', i: '🏂', p: 'snowpark' }, kids: { t: 'Шана және тюбинг', i: '🛷', p: 'kids' }, rink: { t: 'Мұз айдыны', i: '⛸️', p: 'rink' },
   rafting: { t: 'Рафтинг', i: '🛶', p: 'rafting' }, climbers: { t: 'Альпинистер', i: '🧗', p: 'aktas' }, hikers: { t: 'Жаяу туристер', i: '🥾', p: 'hikers' },
   camp: { t: 'Эко-лагерь', i: '⛺', p: 'camp' }, phyto: { t: 'Фито-бар', i: '🍵', p: 'phyto' }, ges: { t: 'Кіші ГЭС', i: '⚡', p: '' },
@@ -94,4 +94,4 @@ window.INFO = {
   tuskiiz: { t: 'Тұскиіз', i: '🧵', p: 'tuskiiz' }, shanyrak: { t: 'Шаңырақ', i: '☀️', p: 'shanyrak' }, sandyk: { t: 'Сандық пен жүк', i: '🧰', p: 'sandyk' }
 };
 window.POI_PHOTO = { gate: '', ges: '', complex: '@concept', cable: 'gondola', rink: 'rink', kids: 'kids', ski_amateur: 'skiers', snowpark: 'snowpark', ski_pro: 'ski_pro', stable: 'stable', rafting: 'rafting', buddha: 'buddha', forest: 'forest', aktas: 'aktas', village: 'village', waterfall: 'waterfall' };
-window.INTERIOR_NAMES = { yurt: 'Киіз үйдің іші', restaurant: 'Мейрамхана', hotel: 'Қонақүй', info: 'Ақпарат орталығы', rental: 'Прокат орталығы', health: 'Сауықтыру орталығы', stable: 'Атшабар қорасы' };
+window.INTERIOR_NAMES = { yurt: 'Киіз үйдің іші', restaurant: 'Мейрамхана', hotel: 'Қонақүй', info: 'Ақпарат орталығы', rental: 'Прокат орталығы', health: 'Сауықтыру орталығы', stable: 'Атшабар қорасы', cable: 'Аспалы гондола · 15 км' };

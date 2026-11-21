@@ -10,18 +10,24 @@
   bMute.textContent = muted ? '🔇' : '🔊';
 
   function setSpeaking(on) { el.classList.toggle('speaking', on); bPlay.textContent = on ? '❚❚' : '▶'; status.textContent = on ? 'сөйлеп тұр…' : 'аудиогид · қазақ тілінде'; }
-  audio.addEventListener('playing', () => setSpeaking(true));
+  audio.addEventListener('playing', () => { if (!audio.muted) setSpeaking(true); });
   audio.addEventListener('pause', () => setSpeaking(false));
   audio.addEventListener('ended', () => { setSpeaking(false); if (G.onEnd) { const f = G.onEnd; G.onEnd = null; f(current); } });
 
-  function fallbackSpeak(text) {
-    if (!('speechSynthesis' in window)) return;
-    const u = new SpeechSynthesisUtterance(text);
-    const v = speechSynthesis.getVoices().find((x) => /kk/i.test(x.lang));
-    if (v) u.voice = v; u.lang = 'kk-KZ';
-    u.onstart = () => setSpeaking(true);
-    u.onend = () => { setSpeaking(false); if (G.onEnd) { const f = G.onEnd; G.onEnd = null; f(current); } };
-    speechSynthesis.cancel(); speechSynthesis.speak(u);
+  // Only the pre-generated neural Kazakh voice is used — never the browser's robotic speechSynthesis
+  // (it read Kazakh with a foreign accent when autoplay was blocked or a clip was interrupted).
+  let primed = false;
+  function prime() {
+    if (primed) return; primed = true;
+    if (!audio.paused) return;
+    const probe = 'assets/audio/portal.mp3';
+    audio.muted = true; audio.src = probe;
+    audio.play().then(() => { if (audio.src.endsWith(probe)) { audio.pause(); audio.muted = false; } }).catch(() => { audio.muted = false; primed = false; });
+  }
+  ['pointerdown', 'keydown', 'touchend'].forEach((ev) => document.addEventListener(ev, prime, { capture: true, passive: true }));
+  function play() {
+    audio.muted = false;
+    audio.play().catch((e) => { if (e && e.name === 'NotAllowedError') { setSpeaking(false); status.textContent = '▶ басып тыңдаңыз'; } });
   }
 
   G.say = function (key, opts = {}) {
@@ -32,13 +38,12 @@
     el.classList.remove('min');
     G.onEnd = opts.onEnd || null;
     if (muted || !unlocked) { if (!unlocked) status.textContent = '▶ басып тыңдаңыз'; return; }
-    try { speechSynthesis && speechSynthesis.cancel(); } catch (e) {}
     audio.src = 'assets/audio/' + key + '.mp3';
     audio.currentTime = 0;
-    audio.play().catch(() => fallbackSpeak(text));
+    play();
   };
-  audio.addEventListener('error', () => { if (current && unlocked && !muted) fallbackSpeak(NARRATION[current]); });
-  G.stop = function () { audio.pause(); try { speechSynthesis.cancel(); } catch (e) {} setSpeaking(false); };
+  audio.addEventListener('error', () => { if (audio.muted) return; setSpeaking(false); });
+  G.stop = function () { audio.pause(); setSpeaking(false); };
   G.unlock = function () { unlocked = true; };
   G.isMuted = () => muted;
 
@@ -46,7 +51,7 @@
     unlocked = true;
     if (!current) current = 'intro';
     if (!audio.src || !audio.src.includes(current + '.mp3')) { const m = muted; muted = false; G.say(current); muted = m; if (muted) { muted = false; bMute.textContent = '🔊'; } return; }
-    if (audio.paused) { if (muted) { muted = false; bMute.textContent = '🔊'; } audio.play().catch(() => fallbackSpeak(NARRATION[current])); } else audio.pause();
+    if (audio.paused) { if (muted) { muted = false; bMute.textContent = '🔊'; } play(); } else audio.pause();
   });
   bReplay.addEventListener('click', () => { unlocked = true; if (muted) { muted = false; bMute.textContent = '🔊'; } G.say(current || 'intro'); });
   bMute.addEventListener('click', () => {

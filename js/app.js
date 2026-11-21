@@ -15,7 +15,7 @@
 
   function go(s, opts = {}) {
     if (s !== 'world') stopTour();
-    if (body.classList.contains('inside')) { body.classList.remove('inside'); $('#poiCard').classList.add('hidden'); }
+    if (body.classList.contains('inside')) { body.classList.remove('inside', 'riding'); $('#poiCard').classList.add('hidden'); WorldScene.stopRide && WorldScene.stopRide(); }
     screen = s; body.dataset.screen = s;
     $$('#nav button').forEach((b) => b.classList.toggle('active', b.dataset.go === s));
     $('#nav').classList.remove('open');
@@ -143,7 +143,8 @@
     if (screen !== 'world') return;
     stopTour(); Guide.unlock();
     fade(() => {
-      Interior.enter(type, WorldScene.season);
+      if (type === 'cable') { WorldScene.startRide(); body.classList.add('riding'); $('#insideBar small').textContent = 'Экранды сүйреп жан-жаққа қараңыз · дөңгелекпен жақындатыңыз'; }
+      else { Interior.enter(type, WorldScene.season); body.classList.remove('riding'); $('#insideBar small').textContent = 'Тышқанмен айналыңыз · W A S D жүру · заттарды басыңыз'; }
       body.classList.add('inside'); $('#insideName').textContent = INTERIOR_NAMES[type];
       $('#poiCard').classList.add('hidden'); $('#enterPrompt').classList.remove('on');
       applySprites();
@@ -152,10 +153,12 @@
   }
   function exitInterior() {
     if (!body.classList.contains('inside')) return;
-    fade(() => { body.classList.remove('inside'); $('#poiCard').classList.add('hidden'); App.setScene(WorldScene.ctrl); Guide.stop(); });
+    fade(() => { const rode = body.classList.contains('riding'); body.classList.remove('inside', 'riding'); $('#poiCard').classList.add('hidden'); WorldScene.stopRide(); if (!rode) App.setScene(WorldScene.ctrl); Guide.stop(); });
   }
   App.enterInterior = enterInterior;
   Interior.onInfo = (k) => showInfo(k);
+  WorldScene.onRide = (u, dir, y) => { const k = Math.max(0, Math.min(1, (u - 0.04) / 0.92)); $('#rideProg').style.width = (k * 100).toFixed(1) + '%'; $('#rideAlt').textContent = (dir > 0 ? '▲ ' : '▼ ') + (k * 15).toFixed(1) + ' / 15 км'; };
+  new MutationObserver(() => body.classList.toggle('card-open', !$('#poiCard').classList.contains('hidden'))).observe($('#poiCard'), { attributes: true, attributeFilter: ['class'] });
   WorldScene.onInfo = (k, o) => showInfo(k, o);
   let nearEntry = null;
   WorldScene.onNear = (e) => {

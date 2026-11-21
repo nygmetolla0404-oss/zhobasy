@@ -61,7 +61,17 @@
       el.style.display = 'none';
       labelRoot.appendChild(el);
       const it = { target, el, offset: o.offset || 0, maxDist: o.maxDist || Infinity, minDist: o.minDist || 0, show: true, scaleDist: o.scaleDist || 0 };
-      if (o.onClick) { el.addEventListener('click', (e) => { e.stopPropagation(); o.onClick(); }); el.addEventListener('pointerdown', (e) => e.stopPropagation()); }
+      if (o.collapsible) { const b = document.createElement('b'); b.className = 'lx'; b.title = 'Жию / ашу'; b.textContent = '−'; el.appendChild(b); }
+      if (o.onClick || o.collapsible) {
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (e.target.closest('.lx')) { const c = el.classList.toggle('col'); el.querySelector('.lx').textContent = c ? '+' : '−'; return; }
+          if (el.classList.contains('col')) { el.classList.remove('col'); el.querySelector('.lx').textContent = '−'; return; }
+          if (e.target.closest('.go') && o.onEnter) return o.onEnter();
+          if (o.onClick) o.onClick();
+        });
+        el.addEventListener('pointerdown', (e) => e.stopPropagation());
+      }
       this.items.push(it);
       return it;
     }
@@ -76,7 +86,7 @@
           if (it.target.isObject3D) { if (!isVisibleDeep(it.target)) show = false; else it.target.getWorldPosition(_v); }
           else _v.copy(it.target);
         }
-        if (show && App.labelMode && App.labelMode !== 'all') { const c = it.el.classList; if (App.labelMode === 'none' ? !c.contains('portal') : c.contains('npc')) show = false; }
+        if (show && App.labelMode && App.labelMode !== 'all') { const c = it.el.classList; if (App.labelMode === 'none' ? !c.contains('portal') : (c.contains('npc') || c.contains('obj'))) show = false; }
         if (show) {
           _v.y += it.offset;
           const d = _v.distanceTo(cp);

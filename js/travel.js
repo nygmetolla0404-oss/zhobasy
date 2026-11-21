@@ -87,7 +87,7 @@
         av.position.copy(this.pos); av.rotation.y = this.heading; av.rotation.x = -Math.atan2(hf - hb, 2 * L) * 0.8; av.rotation.z = 0;
         if (m === 'horse') Models.animateHorse(av, this.vel / (o.speeds.horse * s), dt); else Models.animateCar(av, this.vel / s, dt);
       } else {
-        const tv = m === 'eagle' ? Math.max(0.3, K.f) * maxV : K.f * maxV;
+        const tv = m === 'eagle' ? Math.max(0, K.f) * maxV : K.f * maxV; // eagle hovers in place when W is released
         this.vel += (tv - this.vel) * Math.min(1, dt * 1.8);
         this.heading += K.t * 1.4 * dt;
         this.vy += (K.v * maxV * 0.6 - this.vy) * Math.min(1, dt * 3);
@@ -98,7 +98,7 @@
         this.bank += (-K.t * (m === 'eagle' ? 0.55 : 0.25) - this.bank) * Math.min(1, dt * 3);
         av.position.copy(this.pos);
         av.rotation.y = this.heading; av.rotation.z = this.bank;
-        if (m === 'eagle') { av.rotation.x = -this.vy / (maxV + 1e-6) * 0.5; Models.animateEagle(av, K.f > 0.3 || K.v > 0 ? 1 : 0.15, dt); }
+        if (m === 'eagle') { av.rotation.x = -this.vy / (maxV + 1e-6) * 0.5; const hover = Math.abs(this.vel) < maxV * 0.15; if (hover) { av.rotation.x = -0.35; av.position.y += Math.sin(App.clock.elapsedTime * 3) * 0.12 * s; } Models.animateEagle(av, K.f > 0.3 || K.v > 0 || hover ? 1 : 0.15, dt); }
         else { av.rotation.x = (this.vel / (maxV + 1e-6)) * 0.22; av.position.y += Math.sin(App.clock.elapsedTime * 2.5) * 0.08 * s; Models.animateDrone(av, dt); }
       }
       // camera
@@ -141,7 +141,7 @@
   window.MODE_HINTS = {
     overview: '<b>Шолу</b><br><kbd>Тышқан</kbd> айналдыру · <kbd>Дөңгелек</kbd> жақындату<br><kbd>W A S D</kbd> жылжу',
     horse: '<b>Тұлпармен шабу</b><br><kbd>W</kbd><kbd>S</kbd> алға/артқа · <kbd>A</kbd><kbd>D</kbd> бұрылу<br><kbd>Shift</kbd> жылдам · <kbd>Тышқан</kbd> камера',
-    eagle: '<b>Бүркітпен ұшу</b><br><kbd>W</kbd> жылдамдық · <kbd>A</kbd><kbd>D</kbd> бұрылу<br><kbd>Space</kbd> жоғары · <kbd>C</kbd> төмен · <kbd>Shift</kbd> жылдам',
+    eagle: '<b>Бүркітпен ұшу</b><br><kbd>W</kbd> ұшу · жіберсеңіз — <b>бір орында қалықтайды</b><br><kbd>A</kbd><kbd>D</kbd> бұрылу · <kbd>Space</kbd> жоғары · <kbd>C</kbd> төмен',
     drone: '<b>Дронмен ұшу</b><br><kbd>W</kbd><kbd>S</kbd> алға/артқа · <kbd>A</kbd><kbd>D</kbd> бұрылу<br><kbd>Space</kbd> жоғары · <kbd>C</kbd> төмен',
     car: '<b>Электрокар</b><br><kbd>W</kbd><kbd>S</kbd> газ/тежеу · <kbd>A</kbd><kbd>D</kbd> руль<br><kbd>Shift</kbd> жылдам · <kbd>Тышқан</kbd> камера'
   };

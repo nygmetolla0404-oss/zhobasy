@@ -63,6 +63,13 @@
   const clickables = []; W.enterables = [];
   function clk(o, key) { o.userData.info = key; clickables.push(o); return o; }
   function enterable(o, type, r) { W.enterables.push({ obj: o, type, r, pos: new V3() }); }
+  // individual, collapsible name label for an object (with an "enter" chip when it can be entered)
+  function objLabel(o, icon, name, h, enter, maxDist = 240) {
+    const html = `<i>${icon}</i><span class="t">${name}</span>${enter ? '<em class="go">🚪 Кіру</em>' : ''}`;
+    return W.labels.add(o, html, 'obj', { offset: h, maxDist, collapsible: true,
+      onClick: () => { const k = o.userData.info; if (k && W.onInfo) W.onInfo(k, o); },
+      onEnter: () => App.enterInterior && App.enterInterior(enter) });
+  }
   let season = 'winter';
   W.pos = {};
 
@@ -171,8 +178,8 @@
   /* ---------- river ---------- */
   function buildRiver() {
     W.waterTex = App.canvasTex(64, 256, (c, w, h) => {
-      c.fillStyle = '#1f8fe6'; c.fillRect(0, 0, w, h);
-      for (let i = 0; i < 70; i++) { c.fillStyle = `rgba(255,255,255,${0.15 + Math.random() * 0.35})`; c.fillRect(Math.random() * w, Math.random() * h, 2 + Math.random() * 10, 2); }
+      const gr = c.createLinearGradient(0, 0, w, 0); gr.addColorStop(0, '#2f9cf0'); gr.addColorStop(0.5, '#1683e8'); gr.addColorStop(1, '#2f9cf0'); c.fillStyle = gr; c.fillRect(0, 0, w, h);
+      for (let i = 0; i < 70; i++) { c.fillStyle = `rgba(220,240,255,${0.15 + Math.random() * 0.3})`; c.fillRect(Math.random() * w, Math.random() * h, 2 + Math.random() * 10, 2); }
     }, [1, 1]);
     const pos = [], uv = [], idx = []; let n = 0;
     for (let z = 520; z >= -441; z -= 4) {
@@ -181,7 +188,7 @@
       if (n) { const a = (n - 1) * 2; idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); } n++;
     }
     const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); g.computeVertexNormals();
-    W.riverMat = new THREE.MeshStandardMaterial({ map: W.waterTex, color: 0xffffff, roughness: 0.35, metalness: 0, transparent: true, opacity: 0.96, emissive: 0x0a3a6a, emissiveIntensity: 0.35 });
+    W.riverMat = new THREE.MeshStandardMaterial({ map: W.waterTex, color: 0xffffff, roughness: 0.35, metalness: 0, transparent: true, opacity: 0.97, emissive: 0x0d5bb5, emissiveIntensity: 0.45 });
     W.river = new THREE.Mesh(g, W.riverMat); W.river.receiveShadow = true; W.scene.add(W.river);
     // river rocks
     for (let i = 0; i < 70; i++) {
@@ -195,17 +202,17 @@
     const x0 = rx(-445), zTop = -452, top = H(x0, -456) + 1, bottom = riverY(-440);
     W.pos.waterfall = new V3(x0, bottom, -446);
     W.fallTex = App.canvasTex(64, 256, (c, w, h) => {
-      c.fillStyle = 'rgba(200,235,255,.85)'; c.fillRect(0, 0, w, h);
-      for (let i = 0; i < 140; i++) { c.fillStyle = `rgba(255,255,255,${0.4 + Math.random() * 0.6})`; c.fillRect(Math.random() * w, Math.random() * h, 1 + Math.random() * 3, 8 + Math.random() * 30); }
+      c.fillStyle = 'rgba(60,160,240,.92)'; c.fillRect(0, 0, w, h);
+      for (let i = 0; i < 110; i++) { c.fillStyle = `rgba(${200 + Math.random() * 55 | 0},${235 + Math.random() * 20 | 0},255,${0.35 + Math.random() * 0.5})`; c.fillRect(Math.random() * w, Math.random() * h, 1 + Math.random() * 3, 8 + Math.random() * 30); }
     }, [2, 2]);
-    W.fallMat = new THREE.MeshStandardMaterial({ map: W.fallTex, transparent: true, opacity: 0.9, roughness: 0.2, side: THREE.DoubleSide, emissive: 0x335566, emissiveIntensity: 0.2 });
+    W.fallMat = new THREE.MeshStandardMaterial({ map: W.fallTex, transparent: true, opacity: 0.93, roughness: 0.2, side: THREE.DoubleSide, emissive: 0x1565c0, emissiveIntensity: 0.4 });
     const g = new THREE.Group(); W.scene.add(g); W.fallGroup = g; clk(g, 'waterfall');
     const steps = [top, App.lerp(top, bottom, 0.38), App.lerp(top, bottom, 0.7), bottom];
     for (let i = 0; i < 3; i++) {
       const h = steps[i] - steps[i + 1], w = 7 - i;
       const pl = new THREE.Mesh(new THREE.PlaneGeometry(w, h, 1, 4), W.fallMat); pl.position.set(x0 + i * 1.5, (steps[i] + steps[i + 1]) / 2, zTop + 4 + i * 4.5); pl.rotation.x = -0.12; g.add(pl);
       const ledge = new THREE.Mesh(new THREE.DodecahedronGeometry(6, 0), mat(0xa48a7c)); ledge.scale.set(1.4, 0.5, 0.9); ledge.position.set(x0 + i * 1.5, steps[i + 1] - 1.5, zTop + 6 + i * 4.5); ledge.castShadow = true; g.add(ledge);
-      const foam = new THREE.Mesh(new THREE.SphereGeometry(w * 0.55, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2), mat(0xffffff, { opacity: 0.75, flat: false })); foam.position.set(x0 + i * 1.5, steps[i + 1] + 0.2, zTop + 7 + i * 4.5); foam.scale.y = 0.5; g.add(foam); foam.userData.foam = true;
+      const foam = new THREE.Mesh(new THREE.SphereGeometry(w * 0.55, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2), mat(0xd6eeff, { opacity: 0.75, flat: false })); foam.position.set(x0 + i * 1.5, steps[i + 1] + 0.2, zTop + 7 + i * 4.5); foam.scale.y = 0.5; g.add(foam); foam.userData.foam = true;
     }
     // pinkish cliff rocks
     for (let i = 0; i < 26; i++) {
@@ -217,7 +224,7 @@
     // ice for winter
     const ice = new THREE.Group(); groups.winter.add(ice);
     for (let i = 0; i < 9; i++) { const c = new THREE.Mesh(new THREE.ConeGeometry(1.2 + Math.random(), 18 + Math.random() * 16, 6), mat(0xd9f1ff, { opacity: 0.9, r: 0.2 })); c.rotation.x = Math.PI; c.position.set(x0 - 4 + i, top - 10 - Math.random() * 8, zTop + 4); ice.add(c); }
-    W.mist = new THREE.Mesh(new THREE.SphereGeometry(10, 12, 8), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.25, depthWrite: false })); W.mist.position.set(x0 + 4, bottom + 4, -438); W.scene.add(W.mist);
+    W.mist = new THREE.Mesh(new THREE.SphereGeometry(10, 12, 8), new THREE.MeshBasicMaterial({ color: 0xcfe9ff, transparent: true, opacity: 0.25, depthWrite: false })); W.mist.position.set(x0 + 4, bottom + 4, -438); W.scene.add(W.mist);
   }
 
   /* ---------- road & trails ---------- */
@@ -297,7 +304,8 @@
   function buildComplex() {
     const f = flats[0];
     const cx = (W.complex = M.domeComplex()); cx.position.set(f.x, f.h, f.z); cx.rotation.y = 0.35; add(cx);
-    cx.userData.domes.forEach((d) => { clk(d.obj, d.type); enterable(d.obj, d.type, d.r); });
+    const DN = { restaurant: ['🍽', 'Мейрамхана', 31], hotel: ['🏨', 'Қонақүй', 22], info: ['ℹ️', 'Ақпарат орталығы', 22], rental: ['🎿', 'Прокат орталығы', 22], health: ['🌿', 'Сауықтыру орталығы', 22] };
+    cx.userData.domes.forEach((d) => { clk(d.obj, d.type); enterable(d.obj, d.type, d.r); const n = DN[d.type]; objLabel(d.obj, n[0], n[1], n[2], d.type, 190); });
     W.pos.complex = new V3(f.x, f.h, f.z);
     // avenue to road
     const av = ribbon(curveOn([[f.x - 60 * Math.sin(0.35) * 0 - 15, f.z + 58], [60, 245], [rx(250) - 27, 250]], 0.25), 8, new THREE.MeshStandardMaterial({ color: 0xd8d2c6, roughness: 1, polygonOffset: true, polygonOffsetFactor: -2 }), 0.3, 60);
@@ -319,7 +327,7 @@
     const A = new V3(160, flats[8].h, 190), B = new V3(440, flats[9].h, -82);
     W.pos.cable = A.clone();
     const station = (p, rot) => {
-      const g = new THREE.Group(); g.position.copy(p); g.rotation.y = rot; add(g); clk(g, 'gondola');
+      const g = new THREE.Group(); g.position.copy(p); g.rotation.y = rot; add(g); clk(g, 'station'); enterable(g, 'cable', 22);
       g.add(M.mesh(new THREE.BoxGeometry(18, 9, 14), mat(0xe9e2d3), 0, 4.5, 0));
       g.add(M.mesh(new THREE.BoxGeometry(20, 1.2, 16), mat(0x1e2a55), 0, 9.6, 0));
       g.add(M.mesh(new THREE.CylinderGeometry(4, 4, 2, 16), mat(0xe8b85a, { m: 0.4 }), 0, 11, 0));
@@ -327,8 +335,8 @@
       return g;
     };
     const rot = Math.atan2(B.x - A.x, B.z - A.z);
-    station(A, rot); station(B, rot);
-    const sgn = M.textSprite('Гондола · 15 км', { size: 40, color: '#2a1d05', bg: '#f2c25b', scale: 1.5 }); sgn.position.set(A.x, A.y + 15, A.z); add(sgn);
+    objLabel(station(A, rot), '🚡', 'Төменгі гондола бекеті', 18, 'cable', 320); objLabel(station(B, rot), '🚡', 'Жоғарғы бекет · 3500 м', 22, 'cable', 420);
+    const sgn = M.textSprite('Гондола · 15 км', { size: 40, color: '#2a1d05', bg: '#f2c25b', scale: 1.5 }); sgn.position.set(A.x, A.y + 24, A.z); add(sgn);
     // towers
     const nT = 9, pts = [new V3(A.x, A.y + 11, A.z)];
     for (let i = 1; i < nT; i++) {
@@ -348,6 +356,7 @@
     const lm = new THREE.LineBasicMaterial({ color: 0x2b2b33 });
     add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(up.getPoints(4)), lm));
     add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(down.getPoints(4)), lm));
+    W.cableUp = up; W.cableDown = down; W.cableRot = rot;
     const NG = 14;
     for (let i = 0; i < NG; i++) {
       const gd = M.gondola(); add(gd); clk(gd, 'gondola'); const path = i % 2 ? up : down, u0 = i / NG;
@@ -458,7 +467,7 @@
     [30.5, 21.5].forEach((R) => { for (let i = 0; i < 70; i++) { const a = i / 70 * Math.PI * 2; d.position.set(f.x + Math.cos(a) * R * 1.25, f.h + 0.8, f.z + Math.sin(a) * R); d.updateMatrix(); posts.setMatrixAt(n++, d.matrix); } });
     posts.castShadow = true; add(posts);
     [30.5, 21.5].forEach((R) => { const rail = new THREE.Mesh(new THREE.TorusGeometry(R, 0.12, 3, 70), mat(0xf4f1ea)); rail.scale.set(1.25, 1, 1); rail.rotation.x = Math.PI / 2; rail.position.set(f.x, f.h + 1.4, f.z); add(rail); });
-    const barn = new THREE.Group(); barn.position.set(f.x - 8, f.h, f.z - 44 + 6); add(barn); clk(barn, 'stable'); enterable(barn, 'stable', 22);
+    const barn = new THREE.Group(); barn.position.set(f.x - 8, f.h, f.z - 44 + 6); add(barn); clk(barn, 'stable'); enterable(barn, 'stable', 22); objLabel(barn, '🐎', 'Атшабар қорасы', 12, 'stable');
     barn.add(M.mesh(new THREE.BoxGeometry(30, 6, 10), mat(0xa0522d), 0, 3, 0));
     const roof = M.mesh(new THREE.CylinderGeometry(6.5, 6.5, 31, 3, 1), mat(0x5a3a22), 0, 7.2, 0); roof.rotation.z = Math.PI / 2; roof.rotation.x = Math.PI; roof.scale.set(1, 1, 0.9); barn.add(roof);
     for (let i = 0; i < 6; i++) barn.add(M.mesh(new THREE.BoxGeometry(3, 4, 0.2), mat(0xf4f1ea), -12.5 + i * 5, 2.2, 5.05));
@@ -492,10 +501,10 @@
     W.yurts = [];
     for (let i = 0; i < 9; i++) {
       const a = i / 9 * Math.PI * 2 + 0.3, R = 24 + (i % 2) * 6;
-      const y = M.yurt(4 + (i === 0 ? 1.5 : 0), { door: [0xd9822b, 0xc8352f, 0x2f4f9a][i % 3] }); y.position.set(f.x + Math.cos(a) * R, f.h, f.z + Math.sin(a) * R); y.rotation.y = -a - Math.PI / 2; add(y); W.yurts.push(y); clk(y, 'yurt'); enterable(y, 'yurt', 10);
+      const y = M.yurt(4 + (i === 0 ? 1.5 : 0), { door: [0xd9822b, 0xc8352f, 0x2f4f9a][i % 3] }); y.position.set(f.x + Math.cos(a) * R, f.h, f.z + Math.sin(a) * R); y.rotation.y = -a - Math.PI / 2; add(y); W.yurts.push(y); clk(y, 'yurt'); enterable(y, 'yurt', 10); objLabel(y, '🛖', i === 0 ? 'Ақ орда · басты киіз үй' : 'Киіз үй №' + (i + 1), i === 0 ? 11 : 9, 'yurt', 150);
     }
     const sign = M.textSprite('«NOMAD VILLAGE» этно-ауылы', { size: 44, color: '#2a1d05', bg: '#f2c25b', scale: 1.8 }); sign.position.set(f.x, f.h + 15, f.z); add(sign);
-    const kazan = M.kazan(); kazan.position.set(f.x + 4, f.h, f.z + 13); add(kazan); clk(kazan, 'kazan'); W.fires = [kazan.userData.fire];
+    const kazan = M.kazan(); kazan.position.set(f.x + 4, f.h, f.z + 13); add(kazan); clk(kazan, 'kazan'); objLabel(kazan, '🍲', 'Қазан-ошақ', 3.5, null, 110); W.fires = [kazan.userData.fire];
     // stalls
     [['Қымыз', -0.4, 0xc8352f, 'kymyz'], ['Шұбат', 0.2, 0x2f4f9a, 'shubat'], ['Саумал', 0.8, 0x2fa36b, 'saumal'], ['Құрт · Ірімшік', 1.4, 0xd9822b, 'kurt'], ['Бесбармақ', 2.0, 0x7d3fae, 'beshbarmak']].forEach(([t, a, c, key]) => {
       const s = M.stall(t, c); clk(s, key); s.position.set(f.x + Math.cos(a) * 13, f.h, f.z + Math.sin(a) * 13); s.rotation.y = -a - Math.PI / 2; add(s);
@@ -560,7 +569,7 @@
     const camp2 = new THREE.Group(); camp2.position.set(f.x, f.h, f.z); groups.nonwinter.add(camp2); clk(camp2, 'camp');
     for (let i = 0; i < 6; i++) { const t = M.tent([0xe86a2f, 0xf2c032, 0x2fa36b, 0x3b7dd8, 0xc8352f, 0x7d3fae][i]); const a = i / 6 * Math.PI * 2; t.position.set(Math.cos(a) * 12, 0, Math.sin(a) * 12); t.rotation.y = -a - Math.PI / 2; camp2.add(t); }
     const cf2 = M.campfire(); camp2.add(cf2); W.fires.push(cf2.userData.fire);
-    const bar = new THREE.Group(); bar.position.set(f.x - 18, f.h, f.z + 14); add(bar); clk(bar, 'phyto');
+    const bar = new THREE.Group(); bar.position.set(f.x - 18, f.h, f.z + 14); add(bar); clk(bar, 'phyto'); objLabel(bar, '🌿', 'Фито-бар', 9, null, 200);
     bar.add(M.mesh(new THREE.CylinderGeometry(4, 4, 4, 8), mat(0x8a5a2b), 0, 2, 0));
     bar.add(M.mesh(new THREE.ConeGeometry(5.2, 3.5, 8), mat(0x2f6b3f), 0, 5.6, 0));
     const fs = M.textSprite('Фито-бар · орман терапиясы', { size: 40, color: '#fff', bg: '#2f6b3f', scale: 1.5 }); fs.position.set(f.x - 18, f.h + 10, f.z + 14); add(fs);
@@ -592,6 +601,48 @@
       movers.push((dt, t) => { if (season === 'winter') return; const y = ag + 4 + ((t * 0.9 + i * 17) % 60); c.position.set(bx, y, bz); c.rotation.y = 0.5 + Math.PI; c.userData.arms[0].rotation.x = -2.6 + Math.sin(t * 3 + i) * 0.4; c.userData.arms[1].rotation.x = -2.6 - Math.sin(t * 3 + i) * 0.4; const pa = rope.geometry.attributes.position; pa.setXYZ(0, bx, y + 1, bz); pa.setXYZ(1, bx, ag + 100, bz); pa.needsUpdate = true; });
       if (!i) npcLabel(c, 'Альпинистер', 'арқан · карабин', 2.8);
     }
+    /* ---- winter alpinism: ice climbing on Aktas + a roped team on a snowy summit ---- */
+    const axe = (arm) => { const a = new THREE.Group(); a.position.set(0, -0.58, 0.05); a.add(M.mesh(new THREE.BoxGeometry(0.05, 0.62, 0.05), mat(0x2b2b33), 0, -0.2, 0.12)); a.add(M.mesh(new THREE.BoxGeometry(0.05, 0.08, 0.34), mat(0xc0c6cf, { m: 0.7, r: 0.3 }), 0, -0.5, 0.2)); arm.add(a); };
+    const iceG = new THREE.Group(); iceG.position.copy(cliff.position); iceG.rotation.y = 0.5; groups.winter.add(iceG);
+    const iceWall = new THREE.Mesh(new THREE.BoxGeometry(40, 78, 1.2, 4, 8, 1), mat(0xbfe6ff, { opacity: 0.88, r: 0.15 }));
+    { const ip = iceWall.geometry.attributes.position; for (let i = 0; i < ip.count; i++) ip.setZ(i, ip.getZ(i) + Math.sin(ip.getY(i) * 0.3 + ip.getX(i)) * 0.6); iceWall.geometry.computeVertexNormals(); }
+    iceWall.position.set(-1, -14, 13.9); iceG.add(iceWall); clk(iceWall, 'ice');
+    for (let i = 0; i < 7; i++) { const ic = new THREE.Mesh(new THREE.ConeGeometry(0.9 + Math.random(), 8 + Math.random() * 8, 6), mat(0xd9f1ff, { opacity: 0.9 })); ic.rotation.x = Math.PI; ic.position.set(-16 + i * 5, 22 - Math.random() * 4, 14.6); iceG.add(ic); }
+    const snowCap = new THREE.Mesh(new THREE.BoxGeometry(74, 3, 30), mat(0xf6faff)); snowCap.position.set(0, 56, 0); iceG.add(snowCap);
+    for (let i = 0; i < 3; i++) {
+      const c = M.person({ coat: [0xff7a1a, 0xe8452f, 0x3b7dd8][i], hat: 'helmet', helmet: [0xf2c032, 0xffffff, 0xe8452f][i], backpack: 0x2b2b33, trim: false }); groups.winter.add(c); clk(c, 'ice');
+      c.userData.arms.forEach(axe);
+      const rope = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new V3(), new V3(0, 1, 0)]), new THREE.LineBasicMaterial({ color: 0xf2c032 })); groups.winter.add(rope);
+      const lx = -12 + i * 11, bx = ax - 8 + Math.cos(0.5) * lx + Math.sin(0.5) * 15.2, bz = az - Math.sin(0.5) * lx + Math.cos(0.5) * 15.2;
+      movers.push((dt, t) => { if (season !== 'winter') return; const y = ag + 14 + ((t * 0.6 + i * 15) % 48); c.position.set(bx, y, bz); c.rotation.y = 0.5 + Math.PI; c.userData.arms[0].rotation.x = -2.7 + Math.sin(t * 2.4 + i) * 0.5; c.userData.arms[1].rotation.x = -2.7 - Math.sin(t * 2.4 + i) * 0.5; const pa = rope.geometry.attributes.position; pa.setXYZ(0, bx, y + 1, bz); pa.setXYZ(1, bx, ag + 100, bz); pa.needsUpdate = true; });
+      if (!i) objLabel(c, '🧊', 'Мұзға өрмелеу · қысқы альпинизм', 2.6, null, 320);
+    }
+    // summit expedition near the upper cable station
+    const B9 = flats[9]; let peak = { x: B9.x, z: B9.z, h: -1e9 };
+    for (let a = 0; a < 48; a++) for (let r = 50; r <= 170; r += 12) { const x = B9.x + Math.cos(a / 48 * Math.PI * 2) * r, z = B9.z + Math.sin(a / 48 * Math.PI * 2) * r; if (x > 520 || z < -400) continue; const h = H(x, z); if (h > peak.h) peak = { x, z, h }; }
+    const campX = App.lerp(B9.x, peak.x, 0.18), campZ = App.lerp(B9.z, peak.z, 0.18);
+    const camp = new THREE.Group(); onGround(camp, campX, campZ); groups.winter.add(camp); clk(camp, 'alpine');
+    [0xff7a1a, 0xf2c032, 0xe8452f].forEach((col, i) => { const tnt = M.tent(col); tnt.position.set(i * 4.5 - 4.5, 0, (i % 2) * 3); tnt.rotation.y = i * 0.7; camp.add(tnt); });
+    objLabel(camp, '⛺', 'Альпинистер базалық лагері', 5, null, 360);
+    const sumPts = []; for (let i = 0; i <= 14; i++) { const t = 0.2 + 0.8 * i / 14; sumPts.push([App.lerp(B9.x, peak.x, t) + Math.sin(t * 9) * 6, App.lerp(B9.z, peak.z, t)]); }
+    const sumCurve = curveOn(sumPts, 0);
+    const sflag = M.flag(0x00afca); sflag.scale.setScalar(3); onGround(sflag, peak.x, peak.z); groups.winter.add(sflag);
+    const team = [], teamRope = new THREE.Line(new THREE.BufferGeometry().setFromPoints(new Array(5).fill(0).map(() => new V3())), new THREE.LineBasicMaterial({ color: 0xe8452f }));
+    teamRope.frustumCulled = false; groups.winter.add(teamRope);
+    for (let i = 0; i < 5; i++) {
+      const c = M.person({ coat: [0xe8452f, 0xff7a1a, 0x3b7dd8, 0xf2c032, 0x2fa36b][i], hat: 'helmet', helmet: 0xffffff, backpack: [0x1e2a55, 0x2b2b33][i % 2], trim: false }); c.userData.pose = 'walk'; groups.winter.add(c); clk(c, 'alpine'); team.push(c);
+      c.userData.arms[0].add(M.mesh(new THREE.BoxGeometry(0.05, 1.1, 0.05), mat(0x9aa3b0, { m: 0.6 }), 0, -0.6, 0.1));
+    }
+    objLabel(team[0], '🏔️', 'Қысқы альпинизм · шыңға өрлеу', 2.8, null, 520);
+    movers.push((dt, t) => {
+      if (season !== 'winter') return;
+      const cyc = (t * 0.008) % 1.15, lead = Math.min(0.98, cyc);
+      const pa = teamRope.geometry.attributes.position;
+      team.forEach((c, i) => { const u = Math.max(0.001, lead - i * 0.035); follow(c, sumCurve, u, 0.05); M.animatePerson(c, cyc < 0.98 ? 0.35 : 0, dt); pa.setXYZ(i, c.position.x, c.position.y + 1.1, c.position.z); });
+      pa.needsUpdate = true;
+    });
+    W.pos.alpine = new V3(peak.x, peak.h, peak.z);
+
     // GES
     const g = flats[6]; W.pos.ges = new V3(g.x, g.h, g.z);
     const ges = new THREE.Group(); ges.position.set(g.x, g.h, g.z); add(ges); clk(ges, 'ges');
@@ -663,7 +714,7 @@
     DATA.pois.forEach((p) => {
       const [v, off] = P[p.id];
       const anchor = v.clone(); anchor.y += off;
-      const it = W.labels.add(anchor, `<i>${p.icon}</i>${p.title}`, 'poi', { maxDist: 820, onClick: () => W.openPoi(p.id, true) });
+      const it = W.labels.add(anchor, `<i>${p.icon}</i><span class="t">${p.title}</span>`, 'poi', { maxDist: 820, collapsible: true, onClick: () => W.openPoi(p.id, true) });
       it.poi = p; it.anchor = anchor; it.base = v; W.poiItems[p.id] = it;
     });
   }
@@ -685,7 +736,7 @@
     colorTerrain(s); colorCrowns(s); colorParticles(s);
     groups.winter.visible = s === 'winter'; groups.warm.visible = s !== 'winter'; groups.summer.visible = s === 'summer';
     groups.spring.visible = s === 'spring'; groups.autumn.visible = s === 'autumn'; groups.nonwinter.visible = s !== 'winter'; groups.notsummer.visible = s !== 'summer';
-    W.riverMat.color.set(s === 'winter' ? 0xb8e2fb : 0xffffff);
+    W.riverMat.color.set(s === 'winter' ? 0xb8e2fb : 0xffffff); W.riverMat.emissiveIntensity = s === 'winter' ? 0.15 : 0.45;
     W.fallMat.color.set(s === 'winter' ? 0xd9f1ff : 0xffffff); W.fallGroup.children.forEach((c) => { if (c.userData.foam) c.visible = s !== 'winter'; });
     W.mist.visible = s !== 'winter';
     const snow = s === 'winter';
@@ -698,9 +749,40 @@
   };
 
   /* ---------- update ---------- */
+  /* ---------- gondola ride (first-person inside a cabin) ---------- */
+  W.startRide = function () {
+    W.ride = { u: 0.04, dir: 1, yaw: 0, pitch: -0.22, fov: 62, pos: new V3() };
+    if (!W.rideCab) {
+      const cab = (W.rideCab = new THREE.Group()); W.scene.add(cab);
+      const fm = mat(0xe8b85a, { m: 0.3, r: 0.4 });
+      [[-1, -1], [-1, 1], [1, -1], [1, 1]].forEach(([x, z]) => cab.add(M.mesh(new THREE.BoxGeometry(0.08, 1.9, 0.08), fm, x * 1.05, 0, z * 1.05)));
+      cab.add(M.mesh(new THREE.BoxGeometry(2.3, 0.12, 2.3), fm, 0, 0.98, 0));
+      cab.add(M.mesh(new THREE.BoxGeometry(2.3, 0.5, 2.3), mat(0x1e2a55), 0, -1.15, 0));
+      [[0, 1.08, 2.2, 0.06], [0, -1.08, 2.2, 0.06]].forEach(([x, z, w, d]) => { cab.add(M.mesh(new THREE.BoxGeometry(w, 0.06, d), fm, x, -0.5, z)); });
+      [[1.08, 0], [-1.08, 0]].forEach(([x, z]) => cab.add(M.mesh(new THREE.BoxGeometry(0.06, 0.06, 2.2), fm, x, -0.5, z)));
+    }
+    W.rideCab.visible = true; W.travel.av[W.travel.mode] && (W.travel.av[W.travel.mode].visible = false);
+  };
+  W.stopRide = function () { if (!W.ride) return; W.ride = null; W.rideCab.visible = false; W.camera.fov = 55; W.camera.updateProjectionMatrix(); W.travel.setMode(W.travel.mode); };
+  function updateRide(dt) {
+    const r = W.ride, inp = App.input, cam = W.camera;
+    r.u += dt * 0.012 * r.dir;
+    if (r.u >= 0.96) { r.u = 0.96; r.dir = -1; } if (r.u <= 0.04 && r.dir < 0) { r.u = 0.04; r.dir = 1; }
+    const path = r.dir > 0 ? W.cableUp : W.cableDown, uu = r.dir > 0 ? r.u : 1 - r.u;
+    r.pos.copy(path.getPointAt(Math.min(0.9999, Math.max(0.0001, uu)))); r.pos.y -= 2.9;
+    const tg = path.getTangentAt(Math.min(0.9999, Math.max(0.0001, uu)));
+    W.rideCab.position.copy(r.pos); W.rideCab.rotation.y = W.cableRot;
+    if (inp.dragging) { r.yaw -= inp.dx * 0.004; r.pitch = Math.max(-1.2, Math.min(0.8, r.pitch - inp.dy * 0.004)); }
+    if (inp.wheel) { r.fov = Math.max(30, Math.min(80, r.fov + inp.wheel * 0.03)); cam.fov = r.fov; cam.updateProjectionMatrix(); }
+    const k = inp.keys; if (k.KeyA || k.ArrowLeft) r.yaw += dt * 1.2; if (k.KeyD || k.ArrowRight) r.yaw -= dt * 1.2;
+    const base = W.cableRot + Math.PI + 0.35 + r.yaw; void tg; // look down the valley towards the dome complex
+    cam.position.copy(r.pos); cam.position.y += 0.3;
+    cam.lookAt(cam.position.x + Math.sin(base) * Math.cos(r.pitch), cam.position.y + Math.sin(r.pitch), cam.position.z + Math.cos(base) * Math.cos(r.pitch));
+    if (W.onRide) W.onRide(r.u, r.dir, r.pos.y);
+  }
   W.update = function (dt, t) {
-    W.travel.update(dt);
-    const f = W.travel.focus();
+    if (W.ride) updateRide(dt); else W.travel.update(dt);
+    const f = W.ride ? W.ride.pos : W.travel.focus();
     W.sun.position.set(f.x - 160, f.y + 260, f.z + 140); W.sun.target.position.copy(f); W.sun.target.updateMatrixWorld();
     W.sky.position.copy(W.camera.position);
     if (season !== 'winter') { W.waterTex.offset.y -= dt * 0.9; W.fallTex.offset.y += dt * 1.6; }
@@ -727,7 +809,7 @@
     if (W.onFrame) W.onFrame(dt, t);
     // proximity to enterable buildings
     let near = null;
-    if (W.travel.mode !== 'overview') {
+    if (W.travel.mode !== 'overview' && !W.ride) {
       let best = 1e9; const p = W.travel.pos;
       for (const e of W.enterables) { if (!isVis(e.obj)) continue; e.obj.getWorldPosition(e.pos); const d = Math.hypot(e.pos.x - p.x, e.pos.z - p.z); if (d < e.r && d < best) { best = d; near = e; } }
     }
@@ -745,7 +827,7 @@
     get scene() { return W.scene; }, get camera() { return W.camera; }, get labels() { return W.labels; },
     activate() { W.labels.setVisible(true); }, deactivate() { W.labels.setVisible(false); },
     update: (dt, t) => W.update(dt, t),
-    onClick(x, y) { const r = W.pick(x, y); if (r && W.onInfo) W.onInfo(r.key, r.obj); },
+    onClick(x, y) { if (W.ride) return; const r = W.pick(x, y); if (r && W.onInfo) W.onInfo(r.key, r.obj); },
     onHover(x, y) { const now = performance.now(); if (now - (W._h || 0) < 110) return; W._h = now; App.canvas.style.cursor = W.pick(x, y) ? 'pointer' : ''; }
   };
 })();

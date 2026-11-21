@@ -363,12 +363,12 @@
     const snowCaps = [];
     const center = dome(16, { arch: 4.4 }); center.position.set(0, 0, -8); g.add(center); snowCaps.push(center.userData.snow);
     center.userData.info = 'restaurant'; g.userData.domes = [{ obj: center, type: 'restaurant', r: 26 }];
-    const cs = M.textSprite('🍽 Мейрамхана', { size: 48, color: '#fff', bg: '#c8352f', scale: 2 }); cs.position.set(0, 25, 0); center.add(cs);
+    const cs = M.textSprite('🍽 Мейрамхана', { size: 48, color: '#fff', bg: '#c8352f', scale: 2 }); void cs;
     const sats = [[-26, -16, 0.6], [26, -16, -0.6], [-22, 10, 1.1], [22, 10, -1.1]];
     sats.forEach(([x, z, rot], si) => {
       const d = dome(10.5); d.position.set(x, 0, z); d.rotation.y = rot; g.add(d); snowCaps.push(d.userData.snow);
       const ty = ['hotel', 'info', 'rental', 'health'][si]; d.userData.info = ty; g.userData.domes.push({ obj: d, type: ty, r: 18 });
-      const ds = M.textSprite(['🏨 Қонақүй', 'ℹ️ Ақпарат орталығы', '🎿 Прокат', '🌿 Сауықтыру'][si], { size: 44, color: '#fff', bg: ['#2f4f9a', '#1e2a55', '#3b7dd8', '#2fa36b'][si], scale: 1.5 }); ds.position.set(0, 17.5, 0); d.add(ds);
+      const ds = M.textSprite(['🏨 Қонақүй', 'ℹ️ Ақпарат орталығы', '🎿 Прокат', '🌿 Сауықтыру'][si], { size: 44, color: '#fff', bg: ['#2f4f9a', '#1e2a55', '#3b7dd8', '#2fa36b'][si], scale: 1.5 }); void ds;
       const dx = -x, dz = -8 - z, len = Math.hypot(dx, dz) - 24;
       const cor = mesh(new THREE.BoxGeometry(4.5, 4.2, len), mat(0x8fcbe6, { r: 0.1, m: 0.5, opacity: 0.85 }), x + dx * 0.5, 2.1, z + dz * 0.5);
       cor.lookAt(0, 2.1, -8); g.add(cor);
