@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Текелілік-Қора жауһары</title>
+<meta name="description" content="«Текелілік-Қора жауһары» мультифункционалды спорттық-рекреациялық туристік кластерінің 3D виртуалды моделі">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body data-screen="hero">
+
+<canvas id="gl"></canvas>
+<div id="labels"></div>
+
+<!-- ============ TOP BAR ============ -->
+<header id="topbar">
+  <a class="brand" data-go="hero">
+    <svg viewBox="0 0 40 40" class="brand-ico"><circle cx="20" cy="20" r="18" fill="none" stroke="currentColor" stroke-width="2.5"/><circle cx="20" cy="20" r="6" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M20 2v12M20 26v12M2 20h12M26 20h12M7.3 7.3l8.5 8.5M24.2 24.2l8.5 8.5M32.7 7.3l-8.5 8.5M15.8 24.2l-8.5 8.5" stroke="currentColor" stroke-width="2"/></svg>
+    <span>Қора жауһары</span>
+  </a>
+  <nav id="nav">
+    <button data-go="hero">Басты бет</button>
+    <button data-go="map">Карта</button>
+    <button data-go="world">3D әлем</button>
+    <button data-go="econ">Экономика</button>
+    <button data-go="about">Жоба туралы</button>
+    <button data-go="authors">Авторлар</button>
+  </nav>
+  <button id="navToggle" aria-label="Мәзір">☰</button>
+</header>
+
+<!-- ============ HERO ============ -->
+<section class="screen" id="screen-hero">
+  <div class="hero-text">
+    <div class="kicker">Ғылыми жоба · География және туризм</div>
+    <h1>«Текелілік-Қора <span>жауһары</span>»</h1>
+    <p class="hero-sub">Жетісу өңірінде мультифункционалды спорттық-рекреациялық туристік кластерін құрудың экономикалық-математикалық моделі</p>
+    <div class="hero-formula">T<sub>total</sub> = N<sub>w</sub>·D<sub>w</sub>·K<sub>w</sub> + N<sub>s</sub>·D<sub>s</sub>·K<sub>s</sub> &nbsp;·&nbsp; NPV = Σ CF<sub>t</sub>/(1+r)<sup>t</sup> − I<sub>0</sub></div>
+    <div class="hero-stats">
+      <div><b>350 000</b><span>турист / жыл</span></div>
+      <div><b>750 млн ₸</b><span>инвестиция</span></div>
+      <div><b>+146,3 млн ₸</b><span>NPV</span></div>
+      <div><b>6,2 жыл</b><span>өтелу мерзімі</span></div>
+    </div>
+    <div class="hero-actions">
+      <button class="btn-gold big" id="startBtn">▶&nbsp; Бастау</button>
+      <button class="btn-ghost" data-go="about">Жоба туралы</button>
+    </div>
+  </div>
+  <div class="scroll-hint">Тышқанмен айналдырыңыз · 3D математикалық модель</div>
+</section>
+
+<!-- ============ MAP ============ -->
+<section class="screen" id="screen-map">
+  <div class="side-panel" id="mapPanel">
+    <div class="kicker">Жетісу өңірі</div>
+    <h2>Қазақстан картасы</h2>
+    <p>Жарқыраған <b>порталды</b> басыңыз немесе оған жақындаңыз — Қора шатқалына өтесіз.</p>
+    <ul class="facts">
+      <li><span>Координаталар</span><b>44°50′ с.е. · 78°45′ ш.б.</b></li>
+      <li><span>Уақыт белдеуі</span><b>UTC+5</b></li>
+      <li><span>Текелі — Талдықорған</span><b>40 км</b></li>
+      <li><span>Текелі — Алматы</span><b>300 км</b></li>
+      <li><span>Текелі — «Алтын-Емел»</span><b>150 км</b></li>
+      <li><span>Текелі — Бұрқан-бұлақ</span><b>50 км</b></li>
+    </ul>
+    <button class="btn-gold" id="enterPortalBtn">✦ Порталға кіру</button>
+  </div>
+</section>
+
+<!-- ============ WORLD ============ -->
+<section class="screen" id="screen-world">
+  <div id="seasonBar">
+    <button data-season="winter"><i>❄️</i>Қыс</button>
+    <button data-season="spring"><i>🌸</i>Көктем</button>
+    <button data-season="summer"><i>☀️</i>Жаз</button>
+    <button data-season="autumn"><i>🍂</i>Күз</button>
+  </div>
+  <div class="side-panel" id="worldPanel">
+    <div class="kicker" id="wpSeasonKicker">Қысқы маусым</div>
+    <h2>Қора шатқалы</h2>
+    <div id="seasonStats"></div>
+    <div class="poi-list-title">Нысандар <small>(басып, ұшып барыңыз)</small></div>
+    <div id="poiList"></div>
+    <button class="btn-gold" id="tourBtn">▶ Автотур</button>
+  </div>
+  <button id="panelToggle" title="Панель">≡</button>
+  <canvas id="minimap" width="200" height="200"></canvas>
+  <div id="poiCard" class="hidden">
+    <button class="close" id="poiClose">✕</button>
+    <div class="pc-photo" id="pcPhotoBox"><img id="pcImg" alt=""><span id="pcCredit"></span></div>
+    <div class="kicker" id="pcKicker"></div>
+    <h3 id="pcTitle"></h3>
+    <div id="pcStats"></div>
+    <p id="pcText"></p>
+    <div class="pc-actions"><button class="btn-gold small" id="pcEnter">🚪 Ішіне кіру</button><button class="btn-gold small" id="pcListen">🔊 Тыңдау</button><button class="btn-ghost small" id="pcGo">✈ Жақындау</button></div>
+  </div>
+</section>
+
+<div id="toolbar">
+  <button id="tbLabels" title="Белгілерді жасыру/көрсету">🏷<span>Белгілер</span></button>
+  <button id="tbPanel" title="Панельді жию">▤<span>Панель</span></button>
+  <button id="tbMini" title="Мини-карта">🧭<span>Карта</span></button>
+  <button id="tbHint" title="Басқару кеңесі">⌨<span>Кеңес</span></button>
+</div>
+<div id="enterPrompt"><button id="enterBtn">🚪 <span id="enterName"></span> — ішіне кіру <kbd>F</kbd></button></div>
+<div id="insideBar">
+  <div class="ib-text"><div class="kicker">Ішкі көрініс</div><b id="insideName"></b><small>Тышқанмен айналыңыз · W A S D жүру · заттарды басыңыз</small></div>
+  <button class="btn-gold" id="exitBtn">⟵ Сыртқа шығу <kbd>Esc</kbd></button>
+</div>
+<div id="fade"></div>
+
+<!-- shared travel mode bar (map + world) -->
+<div id="modeBar">
+  <button data-mode="overview"><i>🔭</i><span>Шолу</span></button>
+  <button data-mode="horse"><i>🐎</i><span>Тұлпармен</span></button>
+  <button data-mode="eagle"><i>🦅</i><span>Бүркітпен</span></button>
+  <button data-mode="drone"><i>🛸</i><span>Дронмен</span></button>
+  <button data-mode="car"><i>🚙</i><span>Электрокар</span></button>
+</div>
+<div id="controlsHint"></div>
+<div id="touchPad">
+  <div id="joy"><div id="joyKnob"></div></div>
+  <div id="flyBtns"><button data-fly="up">▲</button><button data-fly="down">▼</button></div>
+</div>
+
+<!-- ============ ECONOMICS ============ -->
+<section class="screen page" id="screen-econ">
+  <div class="page-inner">
+    <div class="kicker">III бөлім</div>
+    <h2 class="page-title">Экономикалық-математикалық модель</h2>
+    <p class="lead">Кластердің туристік ағымы, инвестиция құрылымы және дисконтталған ақша ағыны (NPV) моделі. Барлық есептеулер ғылыми жобадағы бастапқы деректер негізінде; жүгірткілерді жылжытып, модельді интерактивті түрде тексеруге болады.</p>
+
+    <div class="kpi-row">
+      <div class="kpi"><span>Бастапқы инвестиция I₀</span><b>750 млн ₸</b></div>
+      <div class="kpi"><span>Жылдық таза ақша ағыны CF</span><b>120 млн ₸</b></div>
+      <div class="kpi"><span>Дисконттау ставкасы r</span><b>10%</b></div>
+      <div class="kpi"><span>Таза келтірілген құн NPV</span><b>+146,3 млн ₸</b></div>
+      <div class="kpi"><span>Өтелу мерзімі PP</span><b>6,2 жыл</b></div>
+      <div class="kpi"><span>Ішкі табыстылық IRR</span><b>14,5%</b></div>
+    </div>
+
+    <div class="card">
+      <h3>1. Инвестиция құрылымы — 750 млн ₸</h3>
+      <div class="split-bar" id="splitBar"></div>
+      <div class="grid2">
+        <div>
+          <p>Ғылыми жобаға сәйкес: <b>500 млн ₸</b> — жеке инвесторлардың қаражаты, <b>250 млн ₸</b> — «Бизнестің жол картасы» мемлекеттік бағдарламасы аясында инженерлік-коммуникациялық желілерді (жол, жарық, су) жүргізуге бөлінетін қайтарымсыз субсидиялар мен инфрақұрылымдық қолдау.</p>
+          <p class="note">Төмендегі шығын баптары бойынша бөлу — модельдік (болжамды) құрылым: жобада тек 500/250 бөлінісі көрсетілген, баптар оны нысандар бойынша нақтылау үшін берілген.</p>
+        </div>
+        <div id="costTable"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>2. 1-қадам: жылдық туристік ағым (маусымдық функция)</h3>
+      <div class="formula">T<sub>total</sub> = (N<sub>w</sub> × D<sub>w</sub> × K<sub>w</sub>) + (N<sub>s</sub> × D<sub>s</sub> × K<sub>s</sub>)</div>
+      <div class="grid2">
+        <div class="sliders" id="flowSliders"></div>
+        <div>
+          <div id="flowCalc" class="calc"></div>
+          <div id="flowChart" class="chart"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>3. 2-қадам: таза келтірілген құн (NPV) және өтелу мерзімі</h3>
+      <div class="formula">NPV = Σ<sub>t=1..n</sub> [ CF<sub>t</sub> / (1 + r)<sup>t</sup> ] × M − I<sub>0</sub></div>
+      <div class="grid2">
+        <div class="sliders" id="npvSliders"></div>
+        <div id="npvResult" class="calc"></div>
+      </div>
+      <div id="npvChart" class="chart wide"></div>
+      <details class="table-view"><summary>Жылдар бойынша кесте (PV)</summary><div id="npvTable"></div></details>
+    </div>
+
+    <div class="card">
+      <h3>4. Трассалар мен нысандардың техникалық параметрлері</h3>
+      <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Трасса / нысан</th><th>Ұзындығы</th><th>Биіктік айырмашылығы</th><th>Еңістігі</th><th>Қиындық деңгейі (FIS)</th></tr></thead>
+        <tbody>
+          <tr><td>Кәсіпқойлар жолы</td><td>6000 м</td><td>1200 м</td><td>30°–35°</td><td><span class="dot black"></span><span class="dot red"></span>Жоғары (қара, қызыл)</td></tr>
+          <tr><td>Әуесқойлар жолы</td><td>3000 м</td><td>450 м</td><td>12°–15°</td><td><span class="dot blue"></span><span class="dot green"></span>Орташа/төмен (көк, жасыл)</td></tr>
+          <tr><td>Балалар беткейі</td><td>300 м</td><td>40 м</td><td>5°–8°</td><td>Оқу-жаттығу (тюбинг, шана)</td></tr>
+          <tr><td>Аспалы гондола жолы</td><td>15 км</td><td>1600 м (тік өрлеу)</td><td>—</td><td>Инженерлік-коммуникациялық белдеу</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="zones">
+        <div class="zone z1"><b>Кәсіпқой шаңғышылар</b><span>ұзындығы 8000 м · 1000 га</span></div>
+        <div class="zone z2"><b>Сноуборд аймағы</b><span>ұзындығы 6000 м · 600 га</span></div>
+        <div class="zone z3"><b>Әуесқой шаңғышылар</b><span>3000–5000 м · 1000 га</span></div>
+        <div class="zone z4"><b>Балалар аймағы</b><span>250 м · 5 га</span></div>
+      </div>
+      <p class="note">Кластер құрылымы: база аумағы — 8 га; аспалы жол — 15 км; орташа биіктігі — 1800–3200 м, абс. биіктігі — 3500 м; сырғанау аумағы — 1000 га; жалпы демалу аумағы — 2000 га (орман ресурсын қосқанда).</p>
+    </div>
+
+    <div class="card">
+      <h3>5. Әлеуметтік-экономикалық әсер</h3>
+      <div class="kpi-row">
+        <div class="kpi"><span>Тұрақты жұмыс орны</span><b>85</b></div>
+        <div class="kpi"><span>Маусымдық жұмыс орны</span><b>150–200</b></div>
+        <div class="kpi"><span>Табысы артатын отбасы</span><b>340+</b></div>
+        <div class="kpi"><span>Өңірлік мультипликатор M</span><b>1,4</b></div>
+      </div>
+      <ul class="bullets">
+        <li><b>Моноқала экономикасын әртараптандыру:</b> Текелі тау-кен өндірістік бағытынан заманауи, экологиялық таза туристік-сервистік хабқа айналады; қала бюджетіне салықтық түсімдер тұрақты артады.</li>
+        <li><b>Жұмыссыздықты азайту:</b> жергілікті тұрғындар, әсіресе ауыл жастары жұмыспен қамтылады.</li>
+        <li><b>Агротуризм:</b> қымыз, құрт, кілегей, сүт, ірімшік, жал-жая, бесбармақ сияқты ұлттық тағамдарға сұраныс фермерлер мен шеберлердің табысын тікелей арттырады.</li>
+        <li><b>Инфрақұрылым:</b> мемлекеттік қолдаумен салынатын жолдар мен желілер шатқал маңындағы елді мекендердің өмір сапасын жақсартады.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT ============ -->
+<section class="screen page" id="screen-about">
+  <div class="page-inner">
+    <div class="kicker">Аннотация</div>
+    <h2 class="page-title">Жоба туралы</h2>
+    <div class="about-hero">
+      <img src="assets/img/complex-concept.png" alt="Киіз үй пішіндес күмбезді база кешенінің концепциясы">
+      <div class="cap">Киіз үй пішіндес күмбезді база кешенінің концепциясы</div>
+    </div>
+    <div class="grid2 about-grid">
+      <div class="card"><h3>Өзектілігі</h3><p>XXI ғасырдағы жаһандану мен урбанизация процестері адамзат қоғамының өмір сүру ырғағын жеделдетіп, созылмалы шаршау мен стресстік факторлардың артуына алып келді. Әлемдік экономикада спорттық-сауықтыру және экологиялық туризмге сұраныс басым бағытқа айналуда. Текелі қаласы мен Қора шатқалы геоморфологиялық құрылымы, климаттық ерекшеліктері және гидрографиялық торы жағынан Орталық Азиядағы ірі мультифункционалды туристік кластерлердің біріне айналуға толық әлеуеті бар аумақ. Бұл ресурстарды ғылыми негізделген экономикалық-математикалық модельдеу арқылы игеру — экологиялық тепе-теңдікті сақтай отырып, моноқала экономикасын әртараптандырудың жолы.</p></div>
+      <div class="card"><h3>Зерттеудің мақсаты</h3><p>Жетісу облысы Текелі қаласы мен Қора шатқалының табиғи-рекреациялық, ландшафтық және инженерлік-коммуникациялық әлеуетін кешенді түрде бағалау және заманауи экономикалық-математикалық модельдеу әдістерін қолдана отырып, «Текелілік-Қора жауһары» мультифункционалды спорттық-рекреациялық туристік кластерін құрудың ғылыми-тәжірибелік тұғырнамасын жасау.</p></div>
+    </div>
+    <div class="card">
+      <h3>Зерттеудің міндеттері</h3>
+      <ol class="tasks">
+        <li>Спорттық-сауықтыру туризмі мен кластерлік теорияның халықаралық және отандық тәжірибедегі теориялық-әдістемелік негіздерін зерделеу.</li>
+        <li>Қора шатқалы мен сабақтас аумақтардың геоморфологиялық, климатологиялық, зооботаникалық және гидрографиялық параметрлеріне кешенді физикалық-географиялық сипаттама мен талдау жасау.</li>
+        <li>Кластердің инженерлік-инфрақұрылымдық қамтамасыз етілу деңгейін (көлік, электр энергиясы, су ресурстары) және инвестициялық тартымдылығын бағалау.</li>
+        <li>Туристік ағымның сыйымдылығын, маусымдық жүктемесін және жобаның өзін-өзі ақтау мерзімін есептейтін экономикалық-математикалық модельдер мен матрицаларды құру.</li>
+        <li>Қысқы және жазғы белсенді туризм түрлерінің (тау-шаңғысы, сноуборд, атты және жаяу треккинг, альпинизм) техникалық-тактикалық ерекшеліктерін айқындап, маршруттық схемаларын әзірлеу.</li>
+        <li>Жобаның аймақ экономикасына, әлеуметтік саласына және моноқаланың даму үрдісіне тигізетін мультипликативті әсерін бағалау.</li>
+      </ol>
+    </div>
+    <div class="card hypo">
+      <h3>Зерттеу гипотезасы</h3>
+      <p>Егер Жетісу Алатауының бірегей ландшафтық белдеулерінде орналасқан Қора шатқалының табиғи ресурстары мен Текелі моноқаласының дайын инфрақұрылымы (жол, жақын маңдағы СЭС-тер, логистикалық осьтер) біріктіріліп, «Бизнестің жол картасы» бағдарламасы аясында инвестиция тартылатын болса, онда «Текелілік-Қора жауһары» кластері қысқы және жазғы маусымда жылына <b>350 мыңнан астам</b> туристі қабылдауға қабілетті, өзін-өзі <b>6–7 жылда</b> толық ақтайтын және өңірлік өнімнің өсімін қамтамасыз ететін тұрақты экономикалық драйверге айналады.</p>
+    </div>
+    <div class="grid2">
+      <div class="card"><h3>Зерттеу объектісі</h3><p>Жетісу облысы Текелі аймағы мен Қора шатқалының туристік-рекреациялық жүйесі, жергілікті туризмді дамытудың болашағы бар саяхат маршруттары және өңірлік инфрақұрылым нысандары.</p></div>
+      <div class="card"><h3>Зерттеу пәні</h3><p>Өлкетану, физикалық және экономикалық география, туризм индустриясын ұйымдастыру, экономикалық-математикалық модельдеу және болжау әдістері.</p></div>
+      <div class="card"><h3>Зерттеу әдістері</h3><div class="chips"><span>Теориялық талдау және жүйелеу</span><span>Картографиялық әдіс</span><span>Физикалық-географиялық сипаттама</span><span>Математикалық модельдеу</span><span>Статистикалық болжау</span><span>Қаржылық талдау (NPV, IRR)</span><span>Салыстырмалы-географиялық әдіс</span><span>Нәтижелерді жалпылау</span></div></div>
+      <div class="card"><h3>Ғылыми жаңалығы</h3><p>Алғаш рет Текелі аймағы мен Қора шатқалының рекреациялық сыйымдылығы тек сипаттамалық тұрғыда емес, нақты математикалық формулалар мен дисконтталған ақша ағындарының (NPV) модельдері арқылы негізделді. Қысқы және жазғы туризм түрлерін синергиялық байланыста дамытудың мультифункционалды кластерлік матрицасы әзірленді.</p></div>
+    </div>
+    <div class="card"><h3>Тәжірибелік маңызы</h3><p>Есептеулер, қаржылық модельдер мен маршруттық тактикалық схемалар Жетісу облысының туризм басқармасы мен Текелі қаласының әкімдігі тарапынан өңірді дамытудың стратегиялық жоспарларында қолданылуы мүмкін. Жұмыс «Бизнестің жол картасы» және мемлекеттік-жекеменшік серіктестік (МЖС) аясында инвесторларға ұсынуға дайын бизнес-жобалық стартап ретінде тәжірибелік құндылыққа ие.</p></div>
+
+    <h2 class="sub-title">Аумақтың физикалық-географиялық сипаттамасы</h2>
+    <div class="geo-grid">
+      <div class="geo"><i>🏔️</i><b>950 → 3800 м</b><span>Текелі қаласынан шатқал шыңдарына дейінгі биіктік</span></div>
+      <div class="geo"><i>❄️</i><b>−12…−15 °C</b><span>Қаңтардың орташа температурасы</span></div>
+      <div class="geo"><i>☀️</i><b>+24…+26 °C</b><span>Шілденің орташа температурасы</span></div>
+      <div class="geo"><i>🌧️</i><b>700–800 мм</b><span>Жылдық жауын-шашын</span></div>
+      <div class="geo"><i>⛷️</i><b>1–1,5 м</b><span>Тұрақты қар жамылғысы</span></div>
+      <div class="geo"><i>🧭</i><b>680–695 мм с.б.</b><span>Атмосфералық қысым</span></div>
+      <div class="geo"><i>🌲</i><b>1500–1800 м</b><span>Шренк шыршасы белдеуінің төменгі шегі</span></div>
+      <div class="geo"><i>🌱</i><b>3–8% гумус</b><span>Тау етегіндегі қара топырақ</span></div>
+    </div>
+    <div class="card"><h3>Инженерлік инфрақұрылым</h3>
+      <ul class="bullets">
+        <li><b>Көлік-логистика:</b> Талдықорғанмен 40 км асфальт жол; Талдықорғандағы әуежай мен теміржол вокзалы; Д. Қонаев көшесі — 33 км, шатқал аузына дейінгі дайын ось; шатқал ішіндегі 31 км тау жолы жақсартылуда.</li>
+        <li><b>Энергетика:</b> Қаратал өзені мен салаларындағы Текелі ГЭС-тер каскады — үзіліссіз әрі арзан электр энергиясы.</li>
+        <li><b>Су ресурстары:</b> мұздықтардан бастау алатын Қора өзені — таза ауыз су мен қар зеңбіректеріне, мұз айдындарына арналған техникалық су.</li>
+      </ul>
+    </div>
+
+    <h2 class="sub-title">Зерттеу жұмысының күнтізбелік жоспары</h2>
+    <div class="timeline" id="timeline"></div>
+
+    <h2 class="sub-title">Пайдаланылған әдебиеттер</h2>
+    <ol class="refs" id="refs"></ol>
+    <h2 class="sub-title">Фото дереккөздері</h2>
+    <p class="note" style="margin-bottom:10px">Нысан карточкаларындағы нақты фотолар — мысал ретінде, Wikimedia Commons ашық лицензиясымен.</p>
+    <ol class="refs" id="photoRefs"></ol>
+  </div>
+</section>
+
+<!-- ============ AUTHORS ============ -->
+<section class="screen page" id="screen-authors">
+  <div class="page-inner">
+    <div class="kicker">Жоба командасы</div>
+    <h2 class="page-title">Авторлар</h2>
+    <div class="authors">
+      <div class="author">
+        <div class="ph"><img src="assets/img/author-student.png" alt="Асқар Медіғат Эльдарұлы"></div>
+        <div class="role">Жоба авторы · Жас ізденуші</div>
+        <h3>Асқар Медіғат Эльдарұлы</h3>
+        <p>11-сынып оқушысы<br>Алматы қаласы Алатау ауданы<br>№181 жалпы білім беретін мектеп</p>
+        <div class="chips"><span>Жаратылыстану-математикалық бағыт</span><span>География және туризм</span></div>
+      </div>
+      <div class="author">
+        <div class="ph"><img src="assets/img/author-teacher.png" alt="Боденбаева Камшат Абилмажиновна"></div>
+        <div class="role">Ғылыми жетекші</div>
+        <h3>Боденбаева Камшат Абилмажиновна</h3>
+        <p>География пәнінің мұғалімі, педагог-зерттеуші<br>№181 жалпы білім беретін мектеп</p>
+        <div class="chips"><span>Физикалық және экономикалық география</span></div>
+      </div>
+    </div>
+    <p class="org">Қазақстан Республикасы Оқу-ағарту министрлігі · «Дарын» республикалық ғылыми-практикалық орталығы · Алматы қаласы білім басқармасы · Алматы, 2026</p>
+  </div>
+</section>
+
+<!-- ============ AI GUIDE ============ -->
+<div id="guide" class="collapsed-no">
+  <div class="g-avatar" id="gAvatar">
+    <svg viewBox="0 0 100 100">
+      <defs><linearGradient id="gbg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2d3c74"/><stop offset="1" stop-color="#16204a"/></linearGradient></defs>
+      <circle cx="50" cy="50" r="48" fill="url(#gbg)"/>
+      <path d="M22 98c2-20 14-28 28-28s26 8 28 28z" fill="#c8352f"/>
+      <path d="M38 72l12 10 12-10" fill="none" stroke="#f2c25b" stroke-width="3"/>
+      <rect x="44" y="58" width="12" height="12" fill="#f1c7a5"/>
+      <ellipse cx="50" cy="47" rx="17" ry="19" fill="#f6d2b3"/>
+      <path d="M31 46c0-16 9-24 19-24s19 8 19 24c-3-8-10-12-19-12s-16 4-19 12z" fill="#2a1a12"/>
+      <path d="M31 46c-3 14 0 26 4 30l3-26zM69 46c3 14 0 26-4 30l-3-26z" fill="#2a1a12"/>
+      <path d="M30 32c2-14 38-14 40 0l-2 4H32z" fill="#e6b54a"/>
+      <path d="M33 31c4-9 30-9 34 0" fill="none" stroke="#fff" stroke-width="2" opacity=".7"/>
+      <circle cx="50" cy="17" r="4" fill="#fff"/><path d="M50 13c-2-6 2-10 6-10-3 3-4 6-6 10z" fill="#fff"/>
+      <ellipse cx="43" cy="48" rx="2.2" ry="2.6" fill="#2a1a12"/><ellipse cx="57" cy="48" rx="2.2" ry="2.6" fill="#2a1a12"/>
+      <path d="M44 57c3 3 9 3 12 0" fill="none" stroke="#c0504a" stroke-width="2.2" stroke-linecap="round" class="mouth"/>
+      <circle cx="38" cy="54" r="3" fill="#f0a3a3" opacity=".5"/><circle cx="62" cy="54" r="3" fill="#f0a3a3" opacity=".5"/>
+    </svg>
+    <div class="g-wave"><i></i><i></i><i></i><i></i><i></i></div>
+  </div>
+  <div class="g-body">
+    <div class="g-head"><b>AI-гид Айгүл</b><span id="gStatus">аудиогид · қазақ тілінде</span></div>
+    <div class="g-text" id="gText">Сәлеметсіз бе! Мен сіздің аудиогидіңізбін. Тыңдау үшін ▶ батырмасын басыңыз.</div>
+    <div class="g-ctrl">
+      <button id="gPlay" title="Ойнату / кідірту">▶</button>
+      <button id="gReplay" title="Қайталау">↻</button>
+      <button id="gMute" title="Дыбысты өшіру">🔊</button>
+      <button id="gMin" title="Жасыру">–</button>
+    </div>
+  </div>
+</div>
+
+<div id="portalFx"><div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div><div class="pt">Порталдан өту…</div></div>
+<div id="loader"><div class="spin"></div><div>3D әлем жүктелуде…</div></div>
+<div id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
+<script src="data/kz-border.js"></script>
+<script src="data/narration.js"></script>
+<script src="data/narration2.js"></script>
+<script src="data/photo-credits.js"></script>
+<script src="js/data.js"></script>
+<script src="js/core.js"></script>
+<script src="js/models.js"></script>
+<script src="js/models2.js"></script>
+<script src="js/guide.js"></script>
+<script src="js/travel.js"></script>
+<script src="js/hero.js"></script>
+<script src="js/map.js"></script>
+<script src="js/world.js"></script>
+<script src="js/interior.js"></script>
+<script src="js/econ.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
